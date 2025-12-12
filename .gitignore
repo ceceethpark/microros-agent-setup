@@ -1,0 +1,21 @@
+# ROS2 관련
+build/
+install/
+log/
+*.pyc
+__pycache__/
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+*.tmp
+*.bak
