@@ -180,3 +180,59 @@ ros2 launch test_luncher.ybcar.yahboomcar_ros2_ws integrated_map_launch.py
 - 각 런치/파라미터 파일의 주요 파라미터(예: EKF/AMCL 주요 파라미터)를 README에 삽입
 중 어떤 작업을 먼저 할지 알려주세요.
 
+## 실행 가능한 노드 예 (`ros2 run`)
+자동으로 스캔한 `console_scripts`/빌드 타깃을 바탕으로 핵심 `ros2 run` 예시입니다.
+
+- `laserscan_to_point_publisher` (console_scripts)
+	- 실행: `ros2 run laserscan_to_point_publisher laserscan_to_point_publisher`
+
+- `robot_pose_publisher_ros2` (C++ executable)
+	- 실행: `ros2 run robot_pose_publisher_ros2 robot_pose_publisher`
+
+- `yahboomcar_astra` (console_scripts)
+	- 실행 예(가능한 엔트리포인트 중 일부):
+		- `ros2 run yahboomcar_astra colorHSV`
+		- `ros2 run yahboomcar_astra colorTracker`
+
+- `yahboomcar_bringup` (console_scripts)
+	- 실행 예(유틸/드라이버 엔트리포인트 일부): `ros2 run yahboomcar_bringup Mcnamu_driver_X3`
+
+- `yahboomcar_ctrl` (console_scripts)
+	- 실행 예: `ros2 run yahboomcar_ctrl yahboom_joy`
+
+- `yahboomcar_mediapipe` (console_scripts)
+	- 실행 예(엔트리포인트 일부): `ros2 run yahboomcar_mediapipe 01_HandDetector`
+
+참고: 위 `ros2 run <pkg> <exe>` 예시는 각 패키지의 `setup.py`의 `entry_points`(console_scripts) 또는 `CMakeLists.txt`의 `add_executable`을 기준으로 자동 생성했습니다. 필요하면 각 스크립트의 인자/환경(예: 카메라 장치, 시뮬레이션 플래그)을 README에 추가할 수 있습니다.
+
+## AMCL / EKF 주요 파라미터 스니펫
+아래는 워크스페이스에 포함된 AMCL 파라미터(`yahboomcar_multi/param/robot1_amcl_params.yaml`)와 IMU 필터 예시(`yahboomcar_bringup/param/imu_filter_param.yaml`)의 핵심 항목입니다 — 복사/붙여넣기용으로 그대로 사용 가능합니다.
+
+### AMCL (robot1_amcl 일부)
+```yaml
+min_particles: 500
+max_particles: 2000
+max_beams: 60
+update_min_d: 0.25
+laser_model_type: "likelihood_field"
+laser_likelihood_max_dist: 2.0
+z_hit: 0.5
+z_rand: 0.5
+```
+
+### IMU filter(imu_filter_madgwick) 예시
+```yaml
+imu_filter_madgwick:
+	ros__parameters:
+		fixed_frame: "base_link"
+		use_mag: false
+		publish_tf: false
+		world_frame: "enu"
+		orientation_stddev: 0.0
+```
+
+EKF(`robot_localization`)는 이와 별도로 `ekf` 파라미터 파일을 사용합니다(이 리포지토리에는 `robot_localization` 패키지의 런치가 포함되어 있으나 파라미터 파일은 외부 또는 상위 패키지에 위치할 수 있습니다). EKF 설정에서 자주 조정하는 항목:
+- `frequency`, 센서별 `process_noise_*`, `measurement_noise_*`, `odom0`/`imu0` 등 입력 토픽 이름
+
+원하시면 위 스니펫을 README 상단의 실행 가이드 근처로 이동시키고, 각 파라미터에 대한 설명(권장 범위, 영향)을 덧붙여 드리겠습니다.
+
