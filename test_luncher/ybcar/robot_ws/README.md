@@ -108,9 +108,57 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard
 - 자동 탐색/Navigation2 통합: `nav2` 런치·파라미터 추가 고려
 - 로컬화 안정성 향상: `robot_localization`(EKF) 튜닝 및 IMU 캘리브레이션
 
----
+## Bringup 예시 런치 파일
+저는 `robot_ws`에 간단한 예시 런치 파일을 추가했습니다. 위치:
 
-원하시면 다음 작업을 계속하겠습니다:
-- `robot_ws`에 `bringup` 예시 런치 파일을 scaffold
-- `robot_ws`를 `gmapping_ws`/`imu_ws`와 통합하는 통합 런치 파일 생성
+- `launch/bringup_example_launch.py` — 워크스페이스/시스템에 있는 `robot_bringup` 패키지의 `bringup.launch.py`를 실행하는 scaffold 런치입니다.
+
+사용 예:
+
+```bash
+# ROS 환경 소스 후
+ros2 launch robot_ws launch/bringup_example_launch.py
+```
+
+무엇을 테스트하나:
+- 하드웨어 bringup이 정상적으로 실행되는지(드라이버 노드가 올라오는지)
+- `cmd_vel`, `odom`, 센서 토픽(`scan`/`imu`) 및 TF가 정상적으로 발행되는지
+
+편집 팁:
+- 실제 패키지/런치 이름이 다르면 `launch/bringup_example_launch.py`의 `ExecuteProcess` 명령을 수정하세요.
+
+## 통합 맵 런치(Bringup + IMU EKF + GMapping)
+통합 테스트를 위한 간단한 통합 런치도 추가했습니다:
+
+- `launch/integrated_map_launch.py` — 순차적으로 `robot_bringup` bringup, `imu_ws`의 EKF 런치, 그리고 `yahboomcar_nav`의 `map_gmapping_launch.py`를 실행하는 scaffold 런치입니다.
+
+사용 예:
+
+```bash
+ros2 launch robot_ws launch/integrated_map_launch.py
+```
+
+무엇을 테스트하나:
+- 전체 통합 워크플로: 하드웨어 bringup → IMU 기반 EKF 보정 → GMapping 맵 생성
+- 각 단계에서 토픽/TF/오도메트리/맵 퍼블리시가 정상 동작하는지 확인
+
+주의 및 맞춤 설정:
+- 패키지/런치 파일 이름(`robot_bringup`, `imu_ws`, `yahboomcar_nav`)은 환경에 맞게 바꾸셔야 합니다.
+- 통합 런치는 각 서브런치(예: bringup, ekf, gmapping)가 독립적으로 동작해야 원활히 통합됩니다. 먼저 각 워크스페이스를 개별적으로 확인하세요.
+
+## 통합 사용 가이드(권장 순서)
+1. `robot_ws` 단독 실행으로 `cmd_vel`/`odom`/`scan`이 안정적으로 나오는지 확인
+2. `imu_ws`의 `ekf_launch.py`를 실행하여 IMU→`odom` 보정 확인
+3. `gmapping_ws`에서 `slam_gmapping`을 실행하여 맵 생성 테스트
+4. 위 세 단계를 통합 런치(`integrated_map_launch.py`)로 검증
+
+## 변경사항 요약
+- 추가된 파일:
+  - `launch/bringup_example_launch.py`
+  - `launch/integrated_map_launch.py`
+- README에 사용법 및 통합 테스트 절차를 문서화함
+
+원하시면 제가 추가로 아래 작업을 진행하겠습니다:
+- `integrated_map_launch.py`를 더 견고하게 수정(런치 포함 방식 변경, IncludeLaunchDescription 사용)
 - `.gitattributes` 추가로 LF 고정
+- 통합 런치에서 파라미터 전달(예: imu/odom 토픽명) 기능 추가
