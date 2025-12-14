@@ -1,2 +1,19 @@
+# Enforce LF for text files to avoid CRLF warnings on Windows
+*.sh     text eol=lf
+*.py     text eol=lf
+*.py3    text eol=lf
+*.launch.py text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+
+# Binary files
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.bin    binary
+*.zip    binary
 test_luncher/ybcar/yahboomcar_ws/core/** filter=lfs diff=lfs merge=lfs -text
 test_luncher/ybcar/yahboomcar_ws/src/yahboomcar_mediapipe/**/shape_predictor_68_face_landmarks.dat filter=lfs diff=lfs merge=lfs -text

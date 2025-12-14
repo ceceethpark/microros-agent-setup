@@ -48,6 +48,20 @@ source install/setup.bash
   - `maxUrange`: 5.0
 - EKF(예): `frequency: 30.0`, `two_d_mode: true`
 
+## 자동 생성 인벤토리
+워크스페이스의 런치/파라미터/소스 파일 목록을 자동으로 수집하는 인벤토리 파일을 추가했습니다.
+
+- 파일: `INVENTORY.md`
+- 생성 스크립트: `scripts/generate_inventory.py` — 실행하면 `INVENTORY.md`를 최신화합니다.
+
+사용 예:
+```bash
+cd test_luncher/ybcar/yahboomcar_ros2_ws
+python scripts/generate_inventory.py
+cat INVENTORY.md
+```
+
+`INVENTORY.md`에는 `launch/`, `params/`, `src/`, `scripts/` 아래의 파일 목록 요약이 포함됩니다. 이 파일은 워크스페이스 점검과 통합 테스트 준비에 유용합니다.
 디버깅 체크리스트
 - 토픽이 안 뜨면: 드라이버 노드가 실행 중인지, 디바이스 권한(`/dev/tty*`) 확인
 - TF lookup 실패: `scan.header.frame_id`와 `base_link`/`odom` 이름 일치 여부 확인
