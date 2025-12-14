@@ -514,14 +514,7 @@ r2n
 - VS Code Remote SSH 사용 시 GUI로 편집 가능
 
 
-## 자주 사용하는 명령어
 
-### ROS2 기본 테스트
-```bash
-# 데모 노드 실행 (테스트용)
-ros2 run demo_nodes_cpp talker
-ros2 topic echo /chatter
-```
 
 ### micro-ROS Agent 제어
 
