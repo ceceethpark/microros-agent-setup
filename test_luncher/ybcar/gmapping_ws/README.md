@@ -31,6 +31,13 @@ ros2 launch slam_gmapping slam_gmapping.launch.py
 ros2 launch yahboomcar_nav map_gmapping_launch.py
 ```
 
+### 실행 스크립트
+저장소 루트에 있는 `run_gmapping.sh`를 사용하면 환경 소싱 후 런치를 실행합니다:
+
+```bash
+./run_gmapping.sh
+```
+
 ## 실행 확인
 - `scan` 토픽 확인:
 
