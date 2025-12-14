@@ -53,3 +53,28 @@ ros2 launch <package> <launch_file>.py
 - `yahboom_web_savmap_interfaces`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_cmake`; Key deps: `geometry_msgs`; Uses `rosidl_default_generators`/`rosidl_default_runtime`. 용도: 웹/네트워크 맵 저장 인터페이스 메시지 정의.
 
 원하시면 각 패키지의 `README.md`와 주요 소스(예: `launch/`, `src/` 진입점)를 자동으로 파싱해 더 정확한 한줄 요약(핵심 노드, 실행 예시, 라이선스)을 추가하겠습니다.
+
+## AMCL / EKF (로컬라이제이션 안내)
+- 개요: EKF(`robot_localization`의 `ekf_node`)는 IMU/oders/속도(또는 휠 인코더)와 관성/관측을 융합해 안정적인 `odom` 프레임(즉, `odom->base_link`)을 제공합니다. AMCL은 맵과 레이저 스캔을 사용해 로봇의 `pose`(map frame)를 추정하고, 보통 `map->odom` 변환을 브로드캐스트하여 전체 TF 체인을 완성합니다.
+- 필요한 토픽: `/scan` (LaserScan), `/odom` (오도메트리), `/imu/data` (IMU), 그리고 TF(`/tf`, `/tf_static`).
+- 권장 실행 순서:
+	1. 하드웨어 드라이버 및 센서(encoder/IMU/LiDAR) 노드 실행
+	2. `ekf_node` 실행하여 안정적인 `/odom`을 퍼블리시
+	3. `map_server` + `amcl` 실행하여 맵 기반 로컬라이제이션 수행
+	4. RViz로 `map->base_link` (또는 `pose`) 확인
+- 간단 실행 예:
+```bash
+# EKF (예: imu_ws에 있는 샘플 launch를 사용)
+ros2 launch imu_ws ekf_launch.py
+
+# map_server + AMCL (예: yahboomcar_nav 내의 런치를 사용)
+ros2 launch yahboomcar_nav amcl_launch.py
+
+# 통합된 테스트(통합 런치를 제공하는 경우)
+ros2 launch test_luncher.ybcar.yahboomcar_ros2_ws integrated_map_launch.py
+```
+- 튜닝 포인트(간단):
+	- EKF: 센서별 `process_noise` / `measurement_noise`, `frequency`, 입력 토픽의 `odom0`/`imu0` 등 설정
+	- AMCL: `min_particles`/`max_particles`, `update_min_d`, `laser_max_beams`, 센서 모델 가중치
+- 팁: EKF로 먼저 `odom`이 안정화되어야 AMCL이 더 빠르게 수렴합니다. 센서 캘리브레이션(특히 IMU/encoder scale, LiDAR mounting)과 TF(링크 프레임) 정의를 먼저 검증하세요.
+
