@@ -1,6 +1,6 @@
 # 시스템 구조
 
-<img src="image.png" alt="System architecture diagram" width="720" />
+<img src="image.png" alt="System architecture diagram" width="360" />
 
 ## 전체 아키텍처
 
