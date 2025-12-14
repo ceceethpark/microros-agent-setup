@@ -54,6 +54,16 @@ source install/setup.bash
 - 파일: `INVENTORY.md`
 - 생성 스크립트: `scripts/generate_inventory.py` — 실행하면 `INVENTORY.md`를 최신화합니다.
 
+또한 상세 자동 인벤토리(`DETAILED_INVENTORY.md`)를 생성하는 스크립트를 추가했습니다:
+
+- `scripts/generate_detailed_inventory.py` — 런치 파일 내 포함 노드/IncludeLaunchDescription 및 파라미터 파일의 최상위 키를 추출하여 `DETAILED_INVENTORY.md`를 생성합니다.
+
+생성 명령 예:
+```bash
+python scripts/generate_detailed_inventory.py
+cat DETAILED_INVENTORY.md
+```
+
 사용 예:
 ```bash
 cd test_luncher/ybcar/yahboomcar_ros2_ws
