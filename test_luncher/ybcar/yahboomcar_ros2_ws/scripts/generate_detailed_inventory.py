@@ -14,20 +14,30 @@ params_dir = ROOT / 'params'
 
 
 def scan_launch_file(p: Path):
-    content = p.read_text(encoding='utf-8', errors='ignore')
+    try:
+        content = p.read_text(encoding='utf-8', errors='ignore')
+    except Exception:
+        return [], []
+
     nodes = []
     includes = []
     # crude parsing for Node(package='pkg', executable='exe') patterns
-    for m in re.finditer(r"Node\(.*?package\s*=\s*['\"](?P<pkg>[^'\"]+)['\"].*?executable\s*=\s*['\"](?P<exe>[^'\"]+)['\"]", content, re.S):
+    node_pattern = re.compile(r"""Node\([\s\S]*?package\s*=\s*['\"](?P<pkg>[^'\"]+)['\"][\s\S]*?executable\s*=\s*['\"](?P<exe>[^'\"]+)['\"]""", re.S)
+    for m in node_pattern.finditer(content):
         nodes.append(f"{m.group('pkg')}/{m.group('exe')}")
-    # find IncludeLaunchDescription calls
-    for m in re.finditer(r"IncludeLaunchDescription\(.*?PythonLaunchDescriptionSource\(.*?['\"](?P<path>[^'\"]+)['\"]", content, re.S):
+
+    # find IncludeLaunchDescription calls that reference other launch files
+    include_pattern = re.compile(r"""IncludeLaunchDescription\([\s\S]*?PythonLaunchDescriptionSource\([\s\S]*?['\"](?P<path>[^'\"]+)['\"]""", re.S)
+    for m in include_pattern.finditer(content):
         includes.append(m.group('path'))
-    # find ros2 launch ExecuteProcess invocations
-    for m in re.finditer(r"ExecuteProcess\(.*?cmd\s*=\s*\[([^\]]+)\]", content, re.S):
+
+    # find ros2 launch ExecuteProcess-like invocations (look inside cmd list)
+    exec_pattern = re.compile(r"""ExecuteProcess\([\s\S]*?cmd\s*=\s*\[([\s\S]*?)\]""", re.S)
+    for m in exec_pattern.finditer(content):
         cmd = m.group(1)
-        if 'ros2' in cmd and 'launch' in cmd:
+        if re.search(r"\bros2\b", cmd) and re.search(r"\blaunch\b", cmd):
             includes.append('ros2 launch ...')
+
     return nodes, includes
 
 
