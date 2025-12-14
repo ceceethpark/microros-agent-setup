@@ -78,3 +78,105 @@ ros2 launch test_luncher.ybcar.yahboomcar_ros2_ws integrated_map_launch.py
 	- AMCL: `min_particles`/`max_particles`, `update_min_d`, `laser_max_beams`, 센서 모델 가중치
 - 팁: EKF로 먼저 `odom`이 안정화되어야 AMCL이 더 빠르게 수렴합니다. 센서 캘리브레이션(특히 IMU/encoder scale, LiDAR mounting)과 TF(링크 프레임) 정의를 먼저 검증하세요.
 
+## 자동 수집: 실행 예시 & 핵심 노드
+아래는 워크스페이스 내 각 패키지의 런치 파일과 핵심 노드를 자동으로 스캔하여 만든 간단 실행 예시입니다.
+
+- `laserscan_to_point_publisher`
+	- Launch: (없음)
+	- 실행 예시: (직접 노드 엔트리 또는 패키지 스크립트 확인 필요)
+
+- `robot_pose_publisher_ros2`
+	- Launch: `launch/robot_pose_publisher_launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch robot_pose_publisher_ros2 robot_pose_publisher_launch.py
+		```
+	- 핵심 노드: `robot_pose_publisher_ros2/robot_pose_publisher` (파라미터: `use_sim_time`, `is_stamped`, `map_frame`, `base_frame`)
+
+- `yahboomcar_astra`
+	- Launch: `launch/colorTracker_X3.launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_astra colorTracker_X3.launch.py
+		```
+	- 핵심 노드: `yahboomcar_astra/colorHSV` (이름: `coloridentify`) — 드라이버는 `yahboomcar_bringup` 런치를 포함합니다.
+
+- `yahboomcar_base_node`
+	- Launch: (없음)
+	- 실행 예시: 베이스 노드가 패키지 내부 `src/`에 있을 가능성, 개별 노드 실행법은 패키지별 README 참조
+
+- `yahboomcar_bringup`
+	- Launch: `launch/yahboomcar_bringup_launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_bringup yahboomcar_bringup_launch.py
+		```
+	- 핵심 노드 / 포함 런치:
+		- 포함: `imu_complementary_filter` 런치, `robot_localization`의 `ekf.launch.py`, `yahboomcar_description`의 description 런치
+		- 노드: `tf2_ros/static_transform_publisher` (base_link↔imu_frame 정적 TF)
+	- 파라미터: `param/imu_filter_param.yaml` (예: `fixed_frame`, `use_mag`, `publish_tf`)
+
+- `yahboomcar_ctrl`
+	- Launch: `launch/yahboomcar_joy_launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_ctrl yahboomcar_joy_launch.py
+		```
+	- 핵심 노드: `yahboomcar_ctrl/yahboom_joy`, 외부 의존: `joy/joy_node`
+
+- `yahboomcar_description`
+	- Launch: `launch/description_launch.py`, `description_multi_robot1.launch.py`, `display_launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_description description_launch.py
+		```
+	- 핵심 노드: `robot_state_publisher`, `joint_state_publisher`, `tf2_ros/static_transform_publisher` (robot_description 기반)
+
+- `yahboomcar_laser`
+	- Launch: (없음)
+	- 실행 예시: 레이저 드라이버 래퍼인 경우 패키지의 노드 엔트리를 확인하세요
+
+- `yahboomcar_mediapipe`
+	- Launch: `launch/mediapipe_points.launch.py`
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_mediapipe mediapipe_points.launch.py
+		```
+	- 핵심 노드: `yahboomcar_point/pub_point`, `rviz2` (RViz config 경로 인자로 사용)
+
+- `yahboomcar_msgs`
+	- Launch: (none) — 메시지 정의 패키지
+	- 실행 예시: 빌드시 `rosidl` 생성기를 사용하며 런타임에는 메시지 타입을 임포트하여 사용
+
+- `yahboomcar_multi`
+	- Launch: 여러 네비게이션/AMCL 관련 런치 포함 (`robot1_amcl_launch.py`, `navigation_launch.py`, 등)
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_multi robot1_amcl_launch.py
+		```
+	- 핵심 노드: `nav2_amcl/amcl`, `nav2_lifecycle_manager/lifecycle_manager`, `tf2_ros/static_transform_publisher` (네임스페이스 사용 예시 포함)
+
+- `yahboomcar_nav`
+	- Launch: `launch/map_gmapping_launch.py`, `launch/navigation_dwb_launch.py`, 등
+	- 실행 예시:
+		```bash
+		ros2 launch yahboomcar_nav map_gmapping_launch.py
+		```
+	- 핵심 노드: `slam_gmapping` 포함 런치, `tf2_ros/static_transform_publisher` (맵/레이저 TF 정적 설정)
+
+- `yahboomcar_visual`
+	- Launch: (none) — RViz/시각화 설정 및 리소스
+	- 실행 예시: RViz 구성 파일 경로를 사용하여 `rviz2 -d <config>`
+
+- `yahboom_app_save_map`
+	- Launch: (none) — 맵 저장/관리 앱(실행 스크립트 또는 노드 확인 필요)
+	- 핵심 의존: `yahboom_web_savmap_interfaces`
+
+- `yahboom_web_savmap_interfaces`
+	- Launch: (none) — 메시지/서비스 정의용 인터페이스 패키지
+
+위 내용은 워크스페이스의 `launch/` 디렉터리와 런치 파일 내 `Node(...)`/`IncludeLaunchDescription(...)` 등을 간단히 스캔해 자동 생성했습니다. 원하시면:
+- 각 패키지의 `src/` 진입점(노드 실행 스크립트)까지 파싱해 실제 실행 가능한 노드 실행 라인(예: `ros2 run <pkg> <exe>`)을 추가
+- 각 런치/파라미터 파일의 주요 파라미터(예: EKF/AMCL 주요 파라미터)를 README에 삽입
+중 어떤 작업을 먼저 할지 알려주세요.
+
