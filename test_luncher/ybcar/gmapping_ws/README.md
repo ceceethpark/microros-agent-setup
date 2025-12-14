@@ -89,3 +89,20 @@ ros2 topic list
 - 매뉴얼(구글 드라이브): https://drive.google.com/drive/folders/1Xd2boZ8CG8Hq_G6zRj8CqsNoueV-Ji3G
 - 매핑 앱 (구글 드라이브): https://drive.google.com/drive/folders/1f25ErWgtyv9w0pSxEO0E7r575RcmiKlX
 - 소스 코드 모음 (구글 드라이브): https://drive.google.com/drive/folders/16n1kfoHGunD2CuZ_Je-8tCHgshOiDSGN
+
+## 주행 패턴 및 권장 파라미터
+- 권장 주행 패턴: 천천히 직선 주행(0.1–0.3 m/s)과 완만한 회전(0.2–0.5 rad/s)을 섞어 영역을 스트라이프(zig-zag) 형태로 커버하세요. 급가속/급회전은 피하고, 같은 지역을 여러 각도에서 스캔하도록 천천히 통과시키는 것이 좋습니다.
+- 권장 파라미터(기본값에서 적용한 권장치):
+	- `particles`: 60 (안정성을 위해 증가)
+	- `linearUpdate`: 0.5 m (맵 업데이트 민감도 증가)
+	- `angularUpdate`: 0.2 rad (~11°)
+	- `map_update_interval`: 3.0 s (맵 갱신 주기 단축)
+	- `temporalUpdate`: 0.5 s
+	- `maxUrange`: 5.0 m
+
+- 튜닝 팁:
+	- 맵이 떨리거나 불안정하면 `particles`를 늘리고 `linearUpdate`/`angularUpdate`를 줄여 보세요.
+	- 맵이 너무 느리게 업데이트되면 `map_update_interval`을 줄이거나 `linearUpdate`를 늘려 보세요.
+	- 오도메트리 신뢰도가 낮으면 센서 기반(레이저) 매칭 의존도가 증가하므로 `particles` 증가가 유리합니다.
+
+예시: 파라미터 변경 후 즉시 테스트하려면 `slam_gmapping.yaml`을 편집한 뒤 워크스페이스를 다시 빌드하거나 `source install/setup.bash` 후 런치를 재시작하세요.
