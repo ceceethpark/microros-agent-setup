@@ -107,6 +107,28 @@ ros2 topic list
 
 예시: 파라미터 변경 후 즉시 테스트하려면 `slam_gmapping.yaml`을 편집한 뒤 워크스페이스를 다시 빌드하거나 `source install/setup.bash` 후 런치를 재시작하세요.
 
+## 수동 주행(텔레옵) 및 맵 저장 도구
+
+- 텔레옵(키보드)을 이용해 수동 주행하려면 별도 터미널에서 아래를 실행하세요:
+
+```bash
+# 터미널 A: 맵퍼 실행
+./run_gmapping.sh
+
+# 터미널 B: 텔레옵 실행 (현재 터미널에서 키보드로 조종)
+./run_teleop.sh
+```
+
+- 맵을 파일로 저장하려면 `nav2_map_server`의 `map_saver_cli`가 필요합니다. 설치되어 있으면 아래처럼 실행하세요:
+
+```bash
+# 저장 예시: 저장할 경로와 파일명(확장자 제외)을 지정
+./map_saver.sh /home/ros2/maps/my_map
+# 결과: /home/ros2/maps/my_map.pgm and /home/ros2/maps/my_map.yaml
+```
+
+참고: `map_saver_cli`는 `nav2_map_server` 패키지에 포함되어 있습니다. 설치되어 있지 않으면 `sudo apt install ros-jazzy-nav2-map-server` 또는 소스 빌드를 통해 설치하세요.
+
 ## 자주 묻는 질문 (Q&A 요약)
 
 - Q: 이 예제는 차량이 스스로 주행하나요, 사용자가 조작하나요?
