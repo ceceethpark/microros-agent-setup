@@ -34,22 +34,22 @@ ros2 launch <package> <launch_file>.py
 - Windows에서 작업 시 `.gitattributes`로 LF 강제 설정을 권장합니다.
 
 ## 패키지 요약
-이 워크스페이스의 주요 패키지들과 간단한 설명입니다.
+이 워크스페이스의 패키지별 요약 (유지관리자, 핵심 의존성, 빌드타입):
 
-- `laserscan_to_point_publisher`: `LaserScan`을 포인트 메시지/포인트클라우드로 변환하여 다른 노드에서 사용하도록 제공합니다.
-- `robot_pose_publisher_ros2`: odom/센서 데이터를 기반으로 로봇의 전역/로컬 위치(tf/pose)를 발행합니다.
-- `yahboomcar_astra`: Orbbec Astra(또는 호환 깊이 카메라) 드라이버 및 관련 노드 통합 패키지입니다.
-- `yahboomcar_base_node`: 모터/엔코더 등 베이스 하드웨어 제어용 로우레벨 노드입니다.
-- `yahboomcar_bringup`: 하드웨어 초기화 및 통합 런치 파일과 설정을 포함한 bringup 패키지입니다.
-- `yahboomcar_ctrl`: 텔레오퍼레이션, PID 또는 로컬 제어 로직을 담은 제어 관련 패키지입니다.
-- `yahboomcar_description`: URDF/xacro, 메쉬와 같은 로봇 모델 및 시각화 리소스입니다.
-- `yahboomcar_laser`: 레이저 센서 드라이버 래퍼 및 레이저 관련 유틸리티입니다.
-- `yahboomcar_mediapipe`: Mediapipe 기반의 영상 처리/추적 통합 노드(예: 손/얼굴/객체 추적).
-- `yahboomcar_msgs`: 이 프로젝트에서 사용하는 커스텀 메시지/서비스 정의입니다.
-- `yahboomcar_multi`: 다중 로봇 또는 멀티 인터페이스를 지원하는 헬퍼 노드 모음입니다.
-- `yahboomcar_nav`: SLAM/Localisation/Navigation 통합(예: gmapping, AMCL, ekf 샘플/설정) 패키지입니다.
-- `yahboomcar_visual`: RViz 구성, 시각화 유틸리티 및 관련 리소스입니다.
-- `yahboom_app_save_map`: 맵 저장/관리용 유틸리티 또는 앱 래퍼입니다.
-- `yahboom_web_savmap_interfaces`: 웹/네트워크를 통한 맵 저장 인터페이스(REST/웹소켓 등) 연동 패키지입니다.
+- `laserscan_to_point_publisher`: Maintainer: parallels <parallels@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: `LaserScan` → 포인트 변환 파이썬 패키지.
+- `robot_pose_publisher_ros2`: Maintainer: milan <milan.madathiparambil@gmail.com>; Build: `ament_cmake`; Key deps: `rclcpp`, `geometry_msgs`, `tf2_ros`. 용도: odom/센서 기반 pose/tf 발행기.
+- `yahboomcar_astra`: Maintainer: nx-ros2 <13377528435@sina.cn>; Build: `ament_python`; Key deps: (none declared). 용도: Orbbec Astra/깊이 카메라 드라이버 통합.
+- `yahboomcar_base_node`: Maintainer: nx-ros2 <nx-ros2@todo.todo>; Build: `ament_cmake`; Key deps: `rclcpp`, `geometry_msgs`, `tf2`, `tf2_ros`, `nav_msgs`. 용도: 베이스 하드웨어(모터/인코더) 제어 노드.
+- `yahboomcar_bringup`: Maintainer: nx-ros2 <nx-ros2@todo.todo>; Build: `ament_python`; Key deps: `rclcpp`, `std_msgs`. 용도: 하드웨어 초기화 및 통합 런치/설정 제공.
+- `yahboomcar_ctrl`: Maintainer: nx-ros2 <nx-ros2@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: 텔레옵/로컬 제어 로직(컨트롤러) 패키지.
+- `yahboomcar_description`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: URDF/xacro, 메쉬 등 로봇 모델 리소스.
+- `yahboomcar_laser`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: 레이저 센서 래퍼 및 유틸리티.
+- `yahboomcar_mediapipe`: Maintainer: nx-ros2 <13377528435@sina.cn>; Build: `ament_python`; Key deps: (none declared). 용도: Mediapipe 기반 영상처리 통합.
+- `yahboomcar_msgs`: Maintainer: root <1461190907@qq.com>; Build: `ament_cmake`; Key deps: `geometry_msgs`, `std_msgs`; Uses `rosidl_default_generators`/`rosidl_default_runtime`. 용도: 커스텀 메시지/서비스 정의 패키지.
+- `yahboomcar_multi`: Maintainer: root <root@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: 다중 로봇/멀티 인터페이스 헬퍼 모음.
+- `yahboomcar_nav`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_python`; Key deps: (none declared). 용도: SLAM/Localisation/Navigation 통합(예: gmapping/AMCL/ekf 샘플 포함).
+- `yahboomcar_visual`: Maintainer: nx-ros2 <1461190907@qq.com>; Build: `ament_python`; Key deps: (none declared). 용도: RViz 구성 및 시각화 유틸리티.
+- `yahboom_app_save_map`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_python`; Key deps: `yahboom_web_savmap_interfaces` (exec). 용도: 맵 저장/관리 앱 래퍼.
+- `yahboom_web_savmap_interfaces`: Maintainer: yahboom <yahboom@todo.todo>; Build: `ament_cmake`; Key deps: `geometry_msgs`; Uses `rosidl_default_generators`/`rosidl_default_runtime`. 용도: 웹/네트워크 맵 저장 인터페이스 메시지 정의.
 
-원하시면 각 패키지의 `README.md` 또는 `package.xml`을 읽어 더 자세한 한줄 요약(저자, 라이선스, 핵심 노드)도 자동으로 추가해 드리겠습니다.
+원하시면 각 패키지의 `README.md`와 주요 소스(예: `launch/`, `src/` 진입점)를 자동으로 파싱해 더 정확한 한줄 요약(핵심 노드, 실행 예시, 라이선스)을 추가하겠습니다.
