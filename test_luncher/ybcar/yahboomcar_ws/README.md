@@ -55,14 +55,10 @@ ros2 launch <package> <launch_file>.py
 원하시면 각 패키지의 `README.md`와 주요 소스(예: `launch/`, `src/` 진입점)를 자동으로 파싱해 더 정확한 한줄 요약(핵심 노드, 실행 예시, 라이선스)을 추가하겠습니다.
 
 ## AMCL / EKF (로컬라이제이션 안내)
-- 개요: EKF(`robot_localization`의 `ekf_node`)는 IMU/oders/속도(또는 휠 인코더)와 관성/관측을 융합해 안정적인 `odom` 프레임(즉, `odom->base_link`)을 제공합니다. AMCL은 맵과 레이저 스캔을 사용해 로봇의 `pose`(map frame)를 추정하고, 보통 `map->odom` 변환을 브로드캐스트하여 전체 TF 체인을 완성합니다.
-- 필요한 토픽: `/scan` (LaserScan), `/odom` (오도메트리), `/imu/data` (IMU), 그리고 TF(`/tf`, `/tf_static`).
-- 권장 실행 순서:
 	1. 하드웨어 드라이버 및 센서(encoder/IMU/LiDAR) 노드 실행
 	2. `ekf_node` 실행하여 안정적인 `/odom`을 퍼블리시
 	3. `map_server` + `amcl` 실행하여 맵 기반 로컬라이제이션 수행
 	4. RViz로 `map->base_link` (또는 `pose`) 확인
-- 간단 실행 예:
 ```bash
 # EKF (예: imu_ws에 있는 샘플 launch를 사용)
 ros2 launch imu_ws ekf_launch.py
@@ -73,6 +69,72 @@ ros2 launch yahboomcar_nav amcl_launch.py
 # 통합된 테스트(통합 런치를 제공하는 경우)
 ros2 launch test_luncher.ybcar.yahboomcar_ros2_ws integrated_map_launch.py
 ```
+참고: 위 `ros2 run <pkg> <exe>` 예시는 각 패키지의 `setup.py`의 `entry_points`(console_scripts) 또는 `CMakeLists.txt`의 `add_executable`을 기준으로 자동 생성했습니다. 필요하면 각 스크립트의 인자/환경(예: 카메라 디바이스, 시뮬레이션 플래그)을 README에 추가할 수 있습니다.
+
+### 런타임 인자 / 권장 패턴
+아래 패턴은 `ros2 run` / `ros2 launch` 를 실제 환경에 맞춰 실행할 때 자주 사용하는 인자 예시입니다.
+
+- 네임스페이스 지정 (멀티 로봇):
+```bash
+ros2 run <pkg> <exe> --ros-args -r __ns:=/robot1
+```
+- 파라미터 설정(예: 시뮬레이션 모드, 디바이스 경로):
+```bash
+ros2 run <pkg> <exe> --ros-args -p use_sim_time:=true -p device:=/dev/video0
+```
+- 런치에서 파라미터 파일 지정:
+```bash
+ros2 launch <pkg> <launch>.py params_file:=/path/to/params.yaml
+```
+
+각 콘솔스크립트/노드는 자체 플래그/파라미터를 가질 수 있으니, 패키지별 `README.md` 또는 `--help`(예: `ros2 run <pkg> <exe> --ros-args --help`)로 확인하세요.
+
+## AMCL 상세 설명 및 EKF 예제
+아래는 AMCL과 EKF 설정 항목의 의미와 권장 초기값, 그리고 EKF(예제) YAML 스켈레톤입니다. 이 값들은 하드웨어/주행 환경에 따라 조정해야 합니다.
+
+### AMCL 주요 파라미터 설명 (요약)
+- `min_particles` / `max_particles`: 파티클 필터의 최소/최대 입자 수. 실내 소형 로봇의 초기값: 100~2000 (정확도 vs 성능 트레이드오프).
+- `update_min_d` / `update_min_a`: 로봇이 이동한 거리/각도 기준으로 AMCL이 업데이트 하는 최소값. 예: `0.25` (m), `0.2` (rad).
+- `laser_model_type`: 센서 모델. `likelihood_field` 권장(지형이 복잡하지 않을 때 안정적).
+- `z_hit`, `z_rand`, `z_short`, `z_max`: 관측 모델 가중치 — `z_hit` 증가 → 관측에 더 민감, `z_rand` 증가 → 잡음 관대.
+- `max_beams` / `max_range`: 레이저 빔 수/최대 범위로 성능/정밀도에 영향.
+- `beam_skip_*`: 다중 경로/반사로 인한 잘못된 빔을 건너뛰는 옵션.
+
+권장 워크플로우: 먼저 센서(레이저, IMU, odom)가 신뢰할 수 있게 퍼블리시 되는지 확인하고, EKF로 `odom`을 안정화한 뒤 AMCL을 실행해 보세요.
+
+### EKF (`robot_localization`) 설정 포인트
+- `frequency`: EKF 노드 주기(Hz). 보통 30~100Hz.
+- `sensor_timeout`: 센서 입력 지연 허용 시간(s).
+- `process_noise_covariance` / `measurement_noise_covariance`: 시스템/측정 잡음 공분산. 작은 값 → 신속한 반응, 큰 값 → 더 부드러운 출력.
+- `odom0` / `imu0` 등: 입력 토픽 이름(환경에 맞춰 정확히 지정해야 함).
+
+### 예제: 간단한 EKF 파라미터 YAML (스켈레톤)
+```yaml
+ekf_filter_node:
+	ros__parameters:
+		frequency: 50.0
+		sensor_timeout: 0.1
+		two_d_mode: true
+		odom0: /odom
+		imu0: /imu/data
+		odom0_config: [true, true, false,
+									 false, false, true,
+									 false, false, false]
+		imu0_config: [false, false, false,
+									true, true, true,
+									false, false, false]
+		odom0_queue_size: 10
+		imu0_queue_size: 50
+		process_noise_covariance: [0.05, 0, 0, 0, 0, 0,
+															 0, 0.05, 0, 0, 0, 0,
+															 0, 0, 0.01, 0, 0, 0,
+															 0, 0, 0, 0.01, 0, 0,
+															 0, 0, 0, 0, 0.01, 0,
+															 0, 0, 0, 0, 0, 0.1]
+
+```
+
+위 스켈레톤은 시작점입니다 — 각 항목(특히 공분산 행렬)은 센서 성능과 로봇 동특성에 맞춰 튜닝해야 합니다. 원하시면 현재 워크스페이스에 있는 파라미터 파일들을 기반으로 권장값을 자동 제안해 드리겠습니다.
 - 튜닝 포인트(간단):
 	- EKF: 센서별 `process_noise` / `measurement_noise`, `frequency`, 입력 토픽의 `odom0`/`imu0` 등 설정
 	- AMCL: `min_particles`/`max_particles`, `update_min_d`, `laser_max_beams`, 센서 모델 가중치
