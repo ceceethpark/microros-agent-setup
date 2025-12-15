@@ -150,3 +150,9 @@ ros2 topic list
 	- A: README의 "주행 패턴 및 권장 파라미터" 섹션을 따르세요(예: 0.1–0.3 m/s, 회전 0.2–0.5 rad/s, `particles=60`, `linearUpdate=0.5`, 등).
 
 원하시면 위 FAQ 항목을 더 늘리거나, 자동 저장 스크립트 및 텔레옵 런치 파일을 바로 추가하겠습니다.
+
+## SLAM Toolbox (요약)
+
+`slam_toolbox`는 ROS2 기반의 실시간 2D SLAM 패키지로, 위치 추정(Localization)과 지도 생성(Mapping)을 동시에 수행합니다. 주요 입력은 2D LiDAR(`/scan`), 오도메트리(`/odom`), 그리고 TF(odom → base → laser)이며, graph-based SLAM 알고리즘을 사용하여 실시간 지도 생성·갱신, 지도 저장/재사용, 온라인 최적화 기능을 제공합니다. Nav2와 호환되며, gmapping 대비 지도 품질과 안정성이 향상되어 장시간 운용에 적합합니다.
+
+자세한 메모는 저장소의 `dos/4_notes.md`에 추가해 두었습니다.
